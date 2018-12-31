@@ -18,6 +18,10 @@
 			{
 				"command": "extension.helloWorld",
 				"title": "Hello World"
+			},
+			{
+				"command": "extension.validateHTML",
+				"title": "Validate HTML"
 			}
 		]
 	},

@@ -8,8 +8,8 @@ export const validateHtml = function () {
         return;
     }
     getValidationFromApi(getTextFromEditor(editor))
-    .then( data => console.log(data))
-    .catch(statusCode => console.log('error: '+statusCode));
+    .then( data => showValidation(data, editor))
+    .catch(error => vscode.window.showInformationMessage('error: ' + error));
 };
 function getTextFromEditor (textEditor: any): string {
     let text =  textEditor.document.getText();
@@ -28,14 +28,31 @@ function getValidationFromApi (text: string): Promise<any> {
             url: API_URL,
             body: text
         },
-        function(error,response, body) {
+        function(error, response, body) {
             
             if(response.statusCode === 200) {
                 resolve(JSON.parse(body));
             }
             else {
-                reject(response.statusCode);
+                reject(error);
             }
         });
     });
+}
+function showValidation(validationResult: any, textEditor: any) {
+    let pos = new vscode.Position(textEditor.selection.end.line + 1, 0);
+    for (let message of validationResult.messages) {
+        if (message.lastLine) {
+            writeMessageWithPosition(message.lastLine, textEditor, pos);
+        } else {
+            writeMessage (message, textEditor, pos);
+        }
+       pos = pos.with(pos.line + 1, 0);
+    }
+}
+function writeMessageWithPosition (message: any, editor: any,  pos: vscode.Position) {
+
+}
+function writeMessage (message: any, editor: any, pos: vscode.Position) {
+
 }

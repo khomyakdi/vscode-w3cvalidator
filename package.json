@@ -22,6 +22,10 @@
 			{
 				"command": "extension.validateHTML",
 				"title": "Validate HTML"
+			},
+			{
+				"command": "extension.testExtension",
+				"title": "Test Ext"
 			}
 		]
 	},

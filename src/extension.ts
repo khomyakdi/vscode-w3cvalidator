@@ -23,6 +23,23 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 	let validator = vscode.commands.registerCommand('extension.validateHTML',validateHtml);
 	context.subscriptions.push(validator);
+	let testExtension = vscode.commands.registerCommand('extension.testExtension', () => {
+		const editor:vscode.TextEditor = vscode.window.activeTextEditor;
+		let lastLine: number = editor.document.lineCount;
+		let lastColumn = editor.document.lineAt(lastLine-1).text.length;
+		const pos = new vscode.Position(lastLine+1, lastColumn);
+		console.log(lastLine);
+		console.log(lastColumn+1);
+		
+		let outputString = "\n";
+		 for(let i = 0; i < 10; i ++) {
+			outputString += i.toString() + '\n';
+		 }
+		editor.edit((edBuilder: vscode.TextEditorEdit) => {
+			edBuilder.insert(pos, outputString);
+		});
+	});
+	context.subscriptions.push(testExtension);
 }
 
 // this method is called when your extension is deactivated

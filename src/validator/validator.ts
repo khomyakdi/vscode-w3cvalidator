@@ -13,10 +13,10 @@ export const validateHtml = function () {
 };
 function getTextFromEditor (textEditor: any): string {
     let text =  textEditor.document.getText();
-    const selection = textEditor.selection;
-    if(selection.start.line !== selection.end.line ||  selection.start.character !== selection.end.character) {
-        text = textEditor.document.getText(selection);
-    }
+    // const selection = textEditor.selection;
+    // if(selection.start.line !== selection.end.line ||  selection.start.character !== selection.end.character) {
+    //     text = textEditor.document.getText(selection);
+    // }
    return text;
 }
 function getValidationFromApi (text: string): Promise<any> {
@@ -31,6 +31,7 @@ function getValidationFromApi (text: string): Promise<any> {
         function(error, response, body) {
             
             if(response.statusCode === 200) {
+                
                 resolve(JSON.parse(body));
             }
             else {
@@ -40,19 +41,36 @@ function getValidationFromApi (text: string): Promise<any> {
     });
 }
 function showValidation(validationResult: any, textEditor: any) {
-    let pos = new vscode.Position(textEditor.selection.end.line + 1, 0);
+    const lastLine: number = textEditor.document.lineCount;
+	const lastColumn = textEditor.document.lineAt(lastLine-1).text.length;
+    const pos = new vscode.Position(lastLine+1, lastColumn);
+
+    let validationString = '\n<!-- VALIDATION RESULT\n';
     for (let message of validationResult.messages) {
-        if (message.lastLine) {
-            writeMessageWithPosition(message.lastLine, textEditor, pos);
-        } else {
-            writeMessage (message, textEditor, pos);
-        }
-       pos = pos.with(pos.line + 1, 0);
+        validationString +=  writeMessage (message) + "\n";
     }
+    if(validationResult.messages.length === 0) {
+        validationString += "HTML is valid\n";
+    } 
+    validationString += '-->';
+    
+    textEditor.edit((edBuilder: vscode.TextEditorEdit) => {
+        edBuilder.insert(pos, validationString);
+    });
 }
-function writeMessageWithPosition (message: any, editor: any,  pos: vscode.Position) {
-
-}
-function writeMessage (message: any, editor: any, pos: vscode.Position) {
-
+function writeMessage (message: any) {
+    let position  = "";
+    if(message.firstLine) {
+        position += `first Line = ${message.firstLine}, `;
+    }
+    if(message.lastLine) {
+        position += `last Line = ${message.lastLine}, `;
+    }
+    if(message.firstColumn) {
+        position += `first Column = ${message.firstColumn}, `;
+    }
+    if(message.lastColumn) {
+        position += `last Column = ${message.lastColumn}`;
+    }
+    return `${message.type}: ${position}, ${message.message};`;
 }
